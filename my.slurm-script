@@ -1,0 +1,10 @@
+#!/bin/csh
+#SBATCH -p test.q
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH -t 00:05:00
+#SBATCH --exclusive
+setenv OMP NUM THREADS 16
+module purge
+module load intel/xe_2015.2
+./a.out
