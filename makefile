@@ -17,20 +17,20 @@ all:
 
 serial:		
 	make prep
-	g++-4.9 -O3 -Wall spacebodies.cpp -o spacebodies
+	g++-4.9 -O3 -Wall spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 debug_serial:		
 	make prep
-	g++-4.9 -g -Wall spacebodies.cpp -o spacebodies
+	g++-4.9 -g -Wall spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 parallel:	
 	make prep
-	g++-4.9 -O3 -Wall -fopenmp spacebodies.cpp -o spacebodies 
+	g++-4.9 -O3 -Wall -fopenmp spacebodies.cpp -std=c++11 -o spacebodies 
 	make run
 
 debug_parallel:	
 	make prep
-	g++-4.9 -g -Wall -fopenmp spacebodies.cpp -o spacebodies 
+	g++-4.9 -g -Wall -fopenmp spacebodies.cpp -std=c++11 -o spacebodies 
 	make run

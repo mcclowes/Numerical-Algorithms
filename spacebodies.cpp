@@ -5,21 +5,22 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <utility>
 
 #include <math.h>
 #include <omp.h> // OpenMP Parallelisation
 #include <stdlib.h> // Rand()
 
 // Space Body initialisation values
-#define BODY_COUNT 10           // Seed K Space Body instances
-#define MAX_MASS 20             // Seed bodies with mass 0 to K
-#define MAX_POS 50              // Seed bodies with position vectors of value 0 to K
-#define MAX_VEL 5               // Seed bodies with velocity vectors of value 0 to K
+#define BODY_COUNT 30           // Seed K Space Body instances
+#define MAX_MASS 50             // Seed bodies with mass 0 to K
+#define MAX_POS (int(BODY_COUNT)) // Seed bodies with position vectors of value 0 to K
+#define MAX_VEL (int(2 * sqrt(MAX_MASS)))               // Seed bodies with velocity vectors of value 0 to K
 
 // Simulation variables
-#define COLL_DIST 0.1           // Collision distance
+#define COLL_DIST (int(MAX_MASS/100))           // Collision distance
 #define TIME_STEPS 2000000      // No. steps
-#define TIME_STEP 0.001        // Step size
+#define TIME_STEP 0.001         // Step size
 #define PLOT_STEP 100           // Plot every K steps
 
 // -------------------- 3D vector struct and vector handling methods --------------------------- //
@@ -77,7 +78,8 @@ SpaceBody resolveCollision( SpaceBody a, SpaceBody b ) {
     return p;
 }
 
-std::vector<SpaceBody> spacebodies;
+std::vector<SpaceBody> spaceBodies; // Array of SpaceBodies
+std::vector<std::pair<int, int>> collisionPairs; //Array of collision idex pairs
 
 // -------------------- Main functions --------------------------- //
 
@@ -90,97 +92,68 @@ void printCSVFile(int counter) {
 	out << "x, y, z" << std::endl;
 
 	for ( int i = 0; i < BODY_COUNT; i++ ) {
-        out << spacebodies[i].pos.x
+        out << spaceBodies[i].pos.x
             << ","
-            << spacebodies[i].pos.y
+            << spaceBodies[i].pos.y
             << ","
-            << spacebodies[i].pos.z
+            << spaceBodies[i].pos.z
             << std::endl;
     }
 }
 
 // Update all bodies
-void updateBody() {
-    // Check for collisions
-    //Parallelise?
-    /*for (int i = 0; i < BODY_COUNT; i++) {
-        for (int j = 0; j < BODY_COUNT; j++) {
-            double distance = magVec( subVec( spacebodies[i].pos, spacebodies[j].pos ) );
-
-            spacebodies[i].force = (Vec3){};
-
-            if ( (i != j) && (spacebodies[j].collided == NULL) ) {
-                spacebodies[i].force = addVec(
-                    spacebodies[i].force, multVec(
-                        subVec( spacebodies[j].pos, spacebodies[i].pos ),
-                        //spacebodies[j].mass / distance / distance / distance
-                        spacebodies[j].mass / (distance * distance * distance)
-                    )
-                );
-            }
-
-            //check for collision
-            if ( (i < BODY_COUNT - 1) && (j > i + 1) && (distance < COLL_DIST) && (spacebodies[j].collided == NULL) ) { // If collided and not pointer
-                printf( "Collision: %d, %d\n", i, j );
-                spacebodies[i] = resolveCollision( spacebodies[i], spacebodies[j] );
-                spacebodies[j].collided = &spacebodies[i];
-            }
-        }
-    }*/
-
-    for (int i = 0; i < BODY_COUNT - 1; i++) {
-        for (int j = i + 1; j < BODY_COUNT; j++) {
-            double distance = magVec( subVec( spacebodies[i].pos, spacebodies[j].pos ) );
-
-            //check for collision
-            if ( (distance < COLL_DIST) && (spacebodies[j].collided == NULL) ) {
-                //printf( "Collision: %d , %d\n", i, j );
-                spacebodies[i] = resolveCollision( spacebodies[i], spacebodies[j] );
-                spacebodies[j].collided = &spacebodies[i];
-            }
-        }
-    }
+void updateBodies() {
+    collisionPairs.clear();
 
     // Update forces
     #pragma omp parallel for
     for ( int i = 0; i < BODY_COUNT; i++ ) {
-        spacebodies[i].force = (Vec3){};
+        spaceBodies[i].force = (Vec3){};
 
         for ( int j = 0; j < BODY_COUNT; j++ ) {
-            // Ignore self and collided spacebodies
-            if ( (i != j) && (spacebodies[j].collided == NULL) ) {
-                double distance = magVec( subVec( spacebodies[i].pos, spacebodies[j].pos ) );
+            // Ignore self and collided spaceBodies
+            if ( (i != j) && (spaceBodies[j].collided == NULL) ) {
+                double distance = magVec( subVec( spaceBodies[i].pos, spaceBodies[j].pos ) );
 
-                spacebodies[i].force = addVec(
-                    spacebodies[i].force, multVec(
-                        subVec( spacebodies[j].pos, spacebodies[i].pos ),
-                        //spacebodies[j].mass / distance / distance / distance
-                        spacebodies[j].mass / (distance * distance * distance)
+                spaceBodies[i].force = addVec(
+                    spaceBodies[i].force, multVec(
+                        subVec( spaceBodies[j].pos, spaceBodies[i].pos ),
+                        spaceBodies[j].mass / (distance * distance * distance)
                     )
                 );
+
+                if ( (j > i) && (i < BODY_COUNT) && (distance < COLL_DIST) && (spaceBodies[j].collided == NULL) ) {
+                    // printf( "Collision: %d , %d\n", i, j );
+                    collisionPairs.push_back({i,j});
+                }
             }
         }
+    }
+
+    //Check for collisions
+    for (int i = 0; i < collisionPairs.size(); i++) {
+        spaceBodies[collisionPairs[i].first] = resolveCollision( spaceBodies[collisionPairs[i].first], spaceBodies[collisionPairs[i].second] );
+        spaceBodies[collisionPairs[i].second].collided = &spaceBodies[collisionPairs[i].first];
     }
 
     // Calculate position and velocity
     #pragma omp parallel for
     for (int i = 0; i < BODY_COUNT; i++) {
-        if ( spacebodies[i].collided != NULL ) {
+        if ( spaceBodies[i].collided != NULL ) {
             // In the event the particle is part of a collided pair
-            spacebodies[i].pos = (*spacebodies[i].collided).pos;
+            spaceBodies[i].pos = (*spaceBodies[i].collided).pos;
         } else {
             // Otherwise calculate the vector stuff
-            spacebodies[i].pos = addVec( spacebodies[i].pos, multVec( spacebodies[i].vel, TIME_STEP ) );
-            spacebodies[i].vel = addVec( spacebodies[i].vel, multVec( spacebodies[i].force, TIME_STEP ) );
+            spaceBodies[i].pos = addVec( spaceBodies[i].pos, multVec( spaceBodies[i].vel, TIME_STEP ) );
+            spaceBodies[i].vel = addVec( spaceBodies[i].vel, multVec( spaceBodies[i].force, TIME_STEP ) );
         }
     }
-
 }
 
 int main() {
     //#pragma omp parallel for //Worth parallelising?
     for (int i=0; i < BODY_COUNT; i++) { //Seed K many space bodies
-        spacebodies.push_back( 
+        spaceBodies.push_back( 
             createSpaceBody(   (double)(rand() % MAX_MASS ), //Body mass
                 (Vec3){ //Body position
                     (double)( rand() % MAX_POS ),
@@ -201,7 +174,7 @@ int main() {
 	t1 = clock();
 
 	for (int i=0; i < TIME_STEPS; i++) {
-		updateBody();
+		updateBodies();
 
 		if (i % PLOT_STEP == 0) { //Check for plot
 			printCSVFile(i / PLOT_STEP + 1); // Please switch off all IO if you do performance tests.
@@ -209,7 +182,7 @@ int main() {
 	}
 
 	t2 = clock();
-	std::cout << "Simulation took " << ((float)t2-(float)t1)/1000.0 << "ms" << std::endl; //Output time taken
+	std::cout << "Simulation time: " << ((float)t2-(float)t1)/1000.0 << "ms" << std::endl; //Output time taken
 
 	return 0;
 }
