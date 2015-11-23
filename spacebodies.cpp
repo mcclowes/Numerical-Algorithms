@@ -24,13 +24,13 @@
 */
 
 // Space Body initialisation values
-int bodyCount = 100;                    // Seed K Space Body instances
-int maxMass = 50;                       // Seed bodies with mass 0 to K
-int maxPos = (int(bodyCount));         // Seed bodies with position vectors of value 0 to K
-int maxVel = (int(2 * sqrt(maxMass)));  // Seed bodies with velocity vectors of value 0 to K
+int bodyCount = 30;                    // Seed K Space Body instances
+int maxMass = 20;                       // Seed bodies with mass 0 to K
+int maxPos = 30;         // Seed bodies with position vectors of value 0 to K
+int maxVel = 5;  // Seed bodies with velocity vectors of value 0 to K
 
 // Simulation variables
-int collDist = (int(maxMass/100));      // Collision distance
+int collDist = 0.01;      // Collision distance
 int timeSteps = 2000000;                // No. steps
 int timeStep = 0.001;                   // Step size
 int plotStep = 100;                     // Plot every K steps
@@ -118,7 +118,7 @@ void updateBodies() {
     collisionPairs.clear();
 
     // Update forces
-    #pragma omp parallel f
+    #pragma omp parallel for
     for ( int i = 0; i < bodyCount; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
@@ -135,7 +135,9 @@ void updateBodies() {
                 );
 
                 if ( (j > i) && (i < bodyCount) && (distance < collDist) && (spaceBodies[j].collided == NULL) ) {
-                    // printf( "Collision: %d , %d\n", i, j );
+                    #if defined FOOBUG
+                    printf( "Collision: %d , %d\n", i, j );
+                    #endif
                     collisionPairs.push_back({i,j});
                 }
             }
@@ -162,17 +164,19 @@ void updateBodies() {
     }
 }
 
-int main(int argc, char* argv) {
-    // Simulation variables
-    if (argv.size() >= 1){ int collDist = argv[1];}      // Collision distance
-    if (argv.size() >= 2){ int timeSteps = argv[2];}                // No. steps
-    if (argv.size() >= 3){ int timeStep = argv[3];}                   // Step size
-    if (argv.size() >= 4){ int plotStep = argv[4];}                     // Plot every K steps
-    // Space Body initialisation values
-    if (argv.size() >= 5){ int bodyCount = argv[5];}                   // Seed K Space Body instances
-    if (argv.size() >= 6){ int maxMass = argv[6];}                      // Seed bodies with mass 0 to K
-    if (argv.size() >= 7){ int maxMass = argv[7];}        // Seed bodies with position vectors of value 0 to K
-    if (argv.size() >= 8){ int MaxVel = argv[8];}  // Seed bodies with velocity vectors of value 0 to K
+int main(int argc, char* argv[]) {
+    // Read in arguments
+    /*
+    if (argc > 0) {
+        if (argc >= 1){ collDist = atoi(argv[1]);}  // Collision distance
+        if (argc >= 2){ timeSteps = atoi(argv[2]);} // No. steps
+        if (argc >= 3){ timeStep = atoi(argv[3]);}  // Step size
+        if (argc >= 4){ plotStep = atoi(argv[4]);}  // Plot every K steps
+        if (argc >= 5){ bodyCount = atoi(argv[5]);} // Seed K Space Body instances
+        if (argc >= 6){ maxMass = atoi(argv[6]);}   // Seed bodies with mass 0 to K
+        if (argc >= 7){ maxPos = atoi(argv[7]);}   // Seed bodies with position vectors of value 0 to K
+        if (argc >= 8){ maxVel = atoi(argv[8]);}    // Seed bodies with velocity vectors of value 0 to K
+    }*/
 
     //#pragma omp parallel for //Worth parallelising?
     for (int i=0; i < bodyCount; i++) { //Seed K many space bodies
@@ -190,8 +194,10 @@ int main(int argc, char* argv) {
                 } ) );
     }
 
-    // Print starting pos 
+    // Print starting pos
+    #if !defined SIMTIME
 	printCSVFile(0); // Please switch off all IO if you do performance tests.
+    #endif
 
 	clock_t t1, t2;
 	t1 = clock();
@@ -200,12 +206,17 @@ int main(int argc, char* argv) {
 		updateBodies();
 
 		if (i % plotStep == 0) { //Check for plot
+            #if !defined SIMTIME
 			printCSVFile(i / plotStep + 1); // Please switch off all IO if you do performance tests.
-		}
+            #endif
+        }
 	}
 
 	t2 = clock();
+
+    //#if defined FOOBUG || SIMTIME
 	std::cout << "Simulation time: " << ((float)t2-(float)t1)/1000.0 << "ms" << std::endl; //Output time taken
+    //#endif
 
 	return 0;
 }
