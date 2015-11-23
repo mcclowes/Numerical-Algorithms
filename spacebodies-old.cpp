@@ -24,16 +24,16 @@
 */
 
 // Space Body initialisation values
-int bodyCount = 100;                    // Seed K Space Body instances
-int maxMass = 50;                       // Seed bodies with mass 0 to K
-int maxPos = (int(bodyCount));         // Seed bodies with position vectors of value 0 to K
-int maxVel = (int(2 * sqrt(maxMass)));  // Seed bodies with velocity vectors of value 0 to K
+#define BODY_COUNT 100           // Seed K Space Body instances
+#define MAX_MASS 50             // Seed bodies with mass 0 to K
+#define MAX_POS (int(BODY_COUNT)) // Seed bodies with position vectors of value 0 to K
+#define MAX_VEL (int(2 * sqrt(MAX_MASS)))               // Seed bodies with velocity vectors of value 0 to K
 
 // Simulation variables
-int collDist = (int(maxMass/100));      // Collision distance
-int timeSteps = 2000000;                // No. steps
-int timeStep = 0.001;                   // Step size
-int plotStep = 100;                     // Plot every K steps
+#define COLL_DIST (int(MAX_MASS/100))           // Collision distance
+#define TIME_STEPS 2000000      // No. steps
+#define TIME_STEP 0.001         // Step size
+#define PLOT_STEP 100           // Plot every K steps
 
 // -------------------- 3D vector struct and vector handling methods --------------------------- //
 
@@ -103,7 +103,7 @@ void printCSVFile(int counter) {
 
 	out << "x, y, z" << std::endl;
 
-	for ( int i = 0; i < bodyCount; i++ ) {
+	for ( int i = 0; i < BODY_COUNT; i++ ) {
         out << spaceBodies[i].pos.x
             << ","
             << spaceBodies[i].pos.y
@@ -119,10 +119,10 @@ void updateBodies() {
 
     // Update forces
     #pragma omp parallel f
-    for ( int i = 0; i < bodyCount; i++ ) {
+    for ( int i = 0; i < BODY_COUNT; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
-        for ( int j = 0; j < bodyCount; j++ ) {
+        for ( int j = 0; j < BODY_COUNT; j++ ) {
             // Ignore self and collided spaceBodies
             if ( (i != j) && (spaceBodies[j].collided == NULL) ) {
                 double distance = magVec( subVec( spaceBodies[i].pos, spaceBodies[j].pos ) );
@@ -134,7 +134,7 @@ void updateBodies() {
                     )
                 );
 
-                if ( (j > i) && (i < bodyCount) && (distance < collDist) && (spaceBodies[j].collided == NULL) ) {
+                if ( (j > i) && (i < BODY_COUNT) && (distance < COLL_DIST) && (spaceBodies[j].collided == NULL) ) {
                     // printf( "Collision: %d , %d\n", i, j );
                     collisionPairs.push_back({i,j});
                 }
@@ -150,42 +150,31 @@ void updateBodies() {
 
     // Calculate position and velocity
     #pragma omp parallel for
-    for (int i = 0; i < bodyCount; i++) {
+    for (int i = 0; i < BODY_COUNT; i++) {
         if ( spaceBodies[i].collided != NULL ) {
             // In the event the particle is part of a collided pair
             spaceBodies[i].pos = (*spaceBodies[i].collided).pos;
         } else {
             // Otherwise calculate the vector stuff
-            spaceBodies[i].pos = addVec( spaceBodies[i].pos, multVec( spaceBodies[i].vel, timeStep ) );
-            spaceBodies[i].vel = addVec( spaceBodies[i].vel, multVec( spaceBodies[i].force, timeStep ) );
+            spaceBodies[i].pos = addVec( spaceBodies[i].pos, multVec( spaceBodies[i].vel, TIME_STEP ) );
+            spaceBodies[i].vel = addVec( spaceBodies[i].vel, multVec( spaceBodies[i].force, TIME_STEP ) );
         }
     }
 }
 
 int main(int argc, char* argv) {
-    // Simulation variables
-    if (argv.size() >= 1){ int collDist = argv[1];}      // Collision distance
-    if (argv.size() >= 2){ int timeSteps = argv[2];}                // No. steps
-    if (argv.size() >= 3){ int timeStep = argv[3];}                   // Step size
-    if (argv.size() >= 4){ int plotStep = argv[4];}                     // Plot every K steps
-    // Space Body initialisation values
-    if (argv.size() >= 5){ int bodyCount = argv[5];}                   // Seed K Space Body instances
-    if (argv.size() >= 6){ int maxMass = argv[6];}                      // Seed bodies with mass 0 to K
-    if (argv.size() >= 7){ int maxMass = argv[7];}        // Seed bodies with position vectors of value 0 to K
-    if (argv.size() >= 8){ int MaxVel = argv[8];}  // Seed bodies with velocity vectors of value 0 to K
-
     //#pragma omp parallel for //Worth parallelising?
-    for (int i=0; i < bodyCount; i++) { //Seed K many space bodies
+    for (int i=0; i < BODY_COUNT; i++) { //Seed K many space bodies
         spaceBodies.push_back( 
-            createSpaceBody(   (double)(rand() % maxMass ), //Body mass
+            createSpaceBody(   (double)(rand() % MAX_MASS ), //Body mass
                 (Vec3){ //Body position
-                    (double)( rand() % maxPos ),
-                    (double)( rand() % maxPos ),
-                    (double)( rand() % maxPos )}, 
+                    (double)( rand() % MAX_POS ),
+                    (double)( rand() % MAX_POS ),
+                    (double)( rand() % MAX_POS )}, 
                 (Vec3){ //Body velocity
-                    (double)( rand() % maxVel - (maxVel / 2) ),
-                    (double)( rand() % maxVel - (maxVel / 2) ),
-                    (double)( rand() % maxVel - (maxVel / 2) )
+                    (double)( rand() % MAX_VEL - (MAX_VEL / 2) ),
+                    (double)( rand() % MAX_VEL - (MAX_VEL / 2) ),
+                    (double)( rand() % MAX_VEL - (MAX_VEL / 2) )
                     //0.0, 0.0, 0.0 //Start static
                 } ) );
     }
@@ -196,11 +185,11 @@ int main(int argc, char* argv) {
 	clock_t t1, t2;
 	t1 = clock();
 
-	for (int i=0; i < timeSteps; i++) {
+	for (int i=0; i < TIME_STEPS; i++) {
 		updateBodies();
 
-		if (i % plotStep == 0) { //Check for plot
-			printCSVFile(i / plotStep + 1); // Please switch off all IO if you do performance tests.
+		if (i % PLOT_STEP == 0) { //Check for plot
+			printCSVFile(i / PLOT_STEP + 1); // Please switch off all IO if you do performance tests.
 		}
 	}
 
