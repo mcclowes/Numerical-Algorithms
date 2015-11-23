@@ -8,11 +8,23 @@
 #include <utility>
 
 #include <math.h>
-#include <omp.h> // OpenMP Parallelisation
 #include <stdlib.h> // Rand()
+/*
+// Space Body initialisation values
+#define BODY_COUNT 100           // Seed K Space Body instances
+#define MAX_MASS 50             // Seed bodies with mass 0 to K
+#define MAX_POS (int(BODY_COUNT)) // Seed bodies with position vectors of value 0 to K
+#define MAX_VEL (int(2 * sqrt(MAX_MASS)))               // Seed bodies with velocity vectors of value 0 to K
+
+// Simulation variables
+#define COLL_DIST (int(MAX_MASS/100))           // Collision distance
+#define TIME_STEPS 2000000      // No. steps
+#define TIME_STEP 0.001         // Step size
+#define PLOT_STEP 100           // Plot every K steps
+*/
 
 // Space Body initialisation values
-#define BODY_COUNT 30           // Seed K Space Body instances
+#define BODY_COUNT 100           // Seed K Space Body instances
 #define MAX_MASS 50             // Seed bodies with mass 0 to K
 #define MAX_POS (int(BODY_COUNT)) // Seed bodies with position vectors of value 0 to K
 #define MAX_VEL (int(2 * sqrt(MAX_MASS)))               // Seed bodies with velocity vectors of value 0 to K
@@ -106,7 +118,7 @@ void updateBodies() {
     collisionPairs.clear();
 
     // Update forces
-    #pragma omp parallel for
+    #pragma omp parallel f
     for ( int i = 0; i < BODY_COUNT; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
@@ -150,7 +162,7 @@ void updateBodies() {
     }
 }
 
-int main() {
+int main(int argc, char* argv) {
     //#pragma omp parallel for //Worth parallelising?
     for (int i=0; i < BODY_COUNT; i++) { //Seed K many space bodies
         spaceBodies.push_back( 
