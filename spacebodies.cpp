@@ -30,9 +30,9 @@ int maxPos = 30;         // Seed bodies with position vectors of value 0 to K
 int maxVel = 5;  // Seed bodies with velocity vectors of value 0 to K
 
 // Simulation variables
-int collDist = 0.01;      // Collision distance
+double collDist = 0.01;      // Collision distance
 int timeSteps = 2000000;                // No. steps
-int timeStep = 0.001;                   // Step size
+double timeStep = 0.001;                   // Step size
 int plotStep = 100;                     // Plot every K steps
 
 // -------------------- 3D vector struct and vector handling methods --------------------------- //
@@ -113,6 +113,43 @@ void printCSVFile(int counter) {
     }
 }
 
+// Create CSV with space body positions at each timestep
+void printResultsFile(float totalTime) {
+    std::stringstream filename;
+    filename << "results/test-result-" << bodyCount <<  ".txt";
+    std::ofstream out;
+
+    out.open( filename.str().c_str() );
+
+    out << "Number of bodies: "
+        << bodyCount << std::endl;
+
+    out << "Input seed: "
+        << bodyCount 
+        << ", " 
+        << maxMass 
+        << ", " 
+        << maxPos 
+        << ", " 
+        << maxVel 
+        << ", " 
+        << collDist 
+        << ", " 
+        << timeSteps 
+        << ", " 
+        << timeStep 
+        << ", " 
+        << plotStep
+        << std::endl;
+
+    out << "Total time: "
+        << totalTime 
+        << 'ms' 
+        << std::endl;
+
+    out.close();
+}
+
 // Update all bodies
 void updateBodies() {
     collisionPairs.clear();
@@ -126,7 +163,7 @@ void updateBodies() {
             // Ignore self and collided spaceBodies
             if ( (i != j) && (spaceBodies[j].collided == NULL) ) {
                 double distance = magVec( subVec( spaceBodies[i].pos, spaceBodies[j].pos ) );
-
+                
                 spaceBodies[i].force = addVec(
                     spaceBodies[i].force, multVec(
                         subVec( spaceBodies[j].pos, spaceBodies[i].pos ),
@@ -166,20 +203,19 @@ void updateBodies() {
 
 int main(int argc, char* argv[]) {
     // Read in arguments
-    /*
     if (argc > 0) {
-        if (argc >= 1){ collDist = atoi(argv[1]);}  // Collision distance
+        if (argc >= 1){ collDist = atof(argv[1]);}  // Collision distance
         if (argc >= 2){ timeSteps = atoi(argv[2]);} // No. steps
-        if (argc >= 3){ timeStep = atoi(argv[3]);}  // Step size
+        if (argc >= 3){ timeStep = atof(argv[3]);}  // Step size
         if (argc >= 4){ plotStep = atoi(argv[4]);}  // Plot every K steps
         if (argc >= 5){ bodyCount = atoi(argv[5]);} // Seed K Space Body instances
         if (argc >= 6){ maxMass = atoi(argv[6]);}   // Seed bodies with mass 0 to K
         if (argc >= 7){ maxPos = atoi(argv[7]);}   // Seed bodies with position vectors of value 0 to K
         if (argc >= 8){ maxVel = atoi(argv[8]);}    // Seed bodies with velocity vectors of value 0 to K
-    }*/
+    }
 
     //#pragma omp parallel for //Worth parallelising?
-    for (int i=0; i < bodyCount; i++) { //Seed K many space bodies
+    for (int i = 0; i < bodyCount; i++) { //Seed K many space bodies
         spaceBodies.push_back( 
             createSpaceBody(   (double)(rand() % maxMass ), //Body mass
                 (Vec3){ //Body position
@@ -213,10 +249,15 @@ int main(int argc, char* argv[]) {
 	}
 
 	t2 = clock();
+    float totalTime = ((float)t2-(float)t1)/1000.0;
 
-    //#if defined FOOBUG || SIMTIME
-	std::cout << "Simulation time: " << ((float)t2-(float)t1)/1000.0 << "ms" << std::endl; //Output time taken
-    //#endif
+    #if defined FOOBUG || SIMTIME
+	std::cout << "Simulation time: " << totalTime << "ms" << std::endl; //Output time taken
+    #endif
+
+    #if defined HAMTIME
+    printResultsFile(totalTime);
+    #endif
 
 	return 0;
 }

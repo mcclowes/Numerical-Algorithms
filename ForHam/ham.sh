@@ -3,8 +3,10 @@
 module purge
 module load intel/xe_2015.2
 
-icc -O3 spacebodies.cpp -o spacebodies
+icc -O3 -HAMTIME spacebodies.cpp -std=c++11 -o spacebodies
 
 module load slurm
-sbatch my.slurm-script
+sbatch test1.slurm-script
+sbatch test2.slurm-script
+sbatch test3.slurm-script
 
