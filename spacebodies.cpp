@@ -151,7 +151,9 @@ void updateBodies() {
     collisionPairs.clear();
 
     // Update forces
+    #if defined PAR
     #pragma omp parallel for
+    #endif
     for ( int i = 0; i < bodyCount; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
@@ -184,7 +186,9 @@ void updateBodies() {
     }
 
     // Calculate position and velocity
+    #if defined PAR
     #pragma omp parallel for
+    #endif
     for (int i = 0; i < bodyCount; i++) {
         if ( spaceBodies[i].collided != NULL ) {
             // In the event the particle is part of a collided pair
@@ -231,7 +235,7 @@ int main(int argc, char* argv[]) {
 	printCSVFile(0); // Please switch off all IO if you do performance tests.
     #endif
 
-    #if defined HAMTIME || SIMTIME
+    #if defined FOOBUG || HAMTIME || SIMTIME
 	clock_t t1, t2;
 	t1 = clock();
     #endif
@@ -246,7 +250,7 @@ int main(int argc, char* argv[]) {
         }
 	}
 
-    #if defined HAMTIME || SIMTIME
+    #if defined FOOBUG || HAMTIME || SIMTIME
 	t2 = clock();
     float totalTime = ((float)t2-(float)t1)/CLOCKS_PER_SEC*1000;
     #endif
@@ -255,7 +259,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "Simulation time: " << totalTime << "ms" << std::endl; //Output time taken
     #endif
 
-    #if defined /*HAMTIME ||*/ SIMTIME
+    #if defined SIMTIME
     printResultsFile(totalTime);
     #endif
 

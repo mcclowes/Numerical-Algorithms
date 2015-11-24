@@ -4,12 +4,12 @@ clean:
 	rm -f spacebodies
 	rm -f *.o
 	rm -rf output/
-	rm -rf results/
+	#rm -rf results/
 
 prep: 		
 	make clean
 	mkdir output
-	mkdir results
+	mkdir -p results
 
 run:		
 	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, maxPos, maxVel
