@@ -103,7 +103,16 @@ void printCSVFile(int counter) {
 // Create CSV with space body positions at each timestep
 void printResultsFile(float totalTime) {
     std::stringstream filename;
-    filename << "results/test-result-" << bodyCount <<  ".txt";
+    
+    //filename    << "results/test-result-P" << bodyCount << "-" << collDist <<  ".txt";
+    filename    << "results/test-result-" 
+                #if defined PAR
+                << "P"
+                #endif
+                << bodyCount
+                << "-"
+                << collDist
+                <<  ".txt";
     std::ofstream out;
 
     out.open( filename.str().c_str() );
@@ -222,8 +231,10 @@ int main(int argc, char* argv[]) {
 	printCSVFile(0); // Please switch off all IO if you do performance tests.
     #endif
 
+    #if defined HAMTIME || SIMTIME
 	clock_t t1, t2;
 	t1 = clock();
+    #endif
 
 	for (int i=0; i < timeSteps; i++) {
 		updateBodies();
@@ -235,14 +246,16 @@ int main(int argc, char* argv[]) {
         }
 	}
 
+    #if defined HAMTIME || SIMTIME
 	t2 = clock();
     float totalTime = ((float)t2-(float)t1)/CLOCKS_PER_SEC*1000;
+    #endif
 
     #if defined FOOBUG 
 	std::cout << "Simulation time: " << totalTime << "ms" << std::endl; //Output time taken
     #endif
 
-    #if defined HAMTIME || SIMTIME
+    #if defined /*HAMTIME ||*/ SIMTIME
     printResultsFile(totalTime);
     #endif
 

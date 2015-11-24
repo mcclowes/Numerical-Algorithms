@@ -1,4 +1,4 @@
-CC=gcc-4.9
+CC=g++-4.9
 
 clean:		
 	rm -f spacebodies
@@ -13,8 +13,8 @@ prep:
 
 run:		
 	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, maxPos, maxVel
-	./spacebodies 0.01 2000000 0.001 100 10 20 30 5
-	./spacebodies 0.01 2000000 0.001 100 20 20 30 5
+	#./spacebodies 0.01 2000000 0.001 100 10 20 30 5
+	./spacebodies 0.05 2000000 0.001 100 50 2 6 2
 
 run_default:		
 	./spacebodies
@@ -41,15 +41,15 @@ debug_serial:
 
 parallel:	
 	make prep
-	g++-4.9 -O3 -Wall -fopenmp spacebodies.cpp -std=c++11 -o spacebodies
+	g++-4.9 -O3 -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 time_parallel:	
 	make prep
-	g++-4.9 -O3 -DSIMTIME -Wall -fopenmp spacebodies.cpp -std=c++11 -o spacebodies
+	g++-4.9 -O3 -DSIMTIME -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 debug_parallel:	
 	make prep
-	g++-4.9 -g -DFOOBUG -Wall -fopenmp spacebodies.cpp -std=c++11 -o spacebodies
+	g++-4.9 -g -DFOOBUG -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodies
 	make run
