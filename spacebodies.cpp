@@ -151,9 +151,7 @@ void updateBodies() {
     collisionPairs.clear();
 
     // Update forces
-    #if defined PAR
     #pragma omp parallel for
-    #endif
     for ( int i = 0; i < bodyCount; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
@@ -186,9 +184,7 @@ void updateBodies() {
     }
 
     // Calculate position and velocity
-    #if defined PAR
     #pragma omp parallel for
-    #endif
     for (int i = 0; i < bodyCount; i++) {
         if ( spaceBodies[i].collided != NULL ) {
             // In the event the particle is part of a collided pair
