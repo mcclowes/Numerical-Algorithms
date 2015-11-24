@@ -6,4 +6,4 @@
 #SBATCH -t 00:20:00
 #SBATCH --exclusive
 
-./spacebodies 0.05 2000000 0.001 100 10 2 6 2
+./spacebodiesseries 0.05 2000000 0.001 100 10 2 6 2

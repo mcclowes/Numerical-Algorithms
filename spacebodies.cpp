@@ -8,32 +8,19 @@
 #include <utility>
 
 #include <math.h>
-#include <stdlib.h> // Rand()
-/*
-// Space Body initialisation values
-#define BODY_COUNT 100           // Seed K Space Body instances
-#define MAX_MASS 50             // Seed bodies with mass 0 to K
-#define MAX_POS (int(BODY_COUNT)) // Seed bodies with position vectors of value 0 to K
-#define MAX_VEL (int(2 * sqrt(MAX_MASS)))               // Seed bodies with velocity vectors of value 0 to K
-
-// Simulation variables
-#define COLL_DIST (int(MAX_MASS/100))           // Collision distance
-#define TIME_STEPS 2000000      // No. steps
-#define TIME_STEP 0.001         // Step size
-#define PLOT_STEP 100           // Plot every K steps
-*/
+#include <stdlib.h>
 
 // Space Body initialisation values
-int bodyCount = 30;                    // Seed K Space Body instances
-int maxMass = 20;                       // Seed bodies with mass 0 to K
-int maxPos = 30;         // Seed bodies with position vectors of value 0 to K
-int maxVel = 5;  // Seed bodies with velocity vectors of value 0 to K
+int bodyCount = 30;         // Seed K Space Body instances
+int maxMass = 20;           // Seed bodies with mass 0 to K
+int maxPos = 30;            // Seed bodies with position vectors of value 0 to K
+int maxVel = 5;             // Seed bodies with velocity vectors of value 0 to K
 
 // Simulation variables
-double collDist = 0.01;      // Collision distance
-int timeSteps = 2000000;                // No. steps
-double timeStep = 0.001;                   // Step size
-int plotStep = 100;                     // Plot every K steps
+double collDist = 0.01;     // Collision distance
+int timeSteps = 2000000;    // No. steps
+double timeStep = 0.001;    // Step size
+int plotStep = 100;         // Plot every K steps
 
 // -------------------- 3D vector struct and vector handling methods --------------------------- //
 
@@ -125,26 +112,26 @@ void printResultsFile(float totalTime) {
         << bodyCount << std::endl;
 
     out << "Input seed: "
-        << bodyCount 
+        << bodyCount
         << ", " 
-        << maxMass 
+        << maxMass
         << ", " 
-        << maxPos 
+        << maxPos
         << ", " 
-        << maxVel 
+        << maxVel
         << ", " 
-        << collDist 
+        << collDist
         << ", " 
-        << timeSteps 
+        << timeSteps
         << ", " 
-        << timeStep 
+        << timeStep
         << ", " 
         << plotStep
         << std::endl;
 
     out << "Total time: "
-        << totalTime 
-        << 'ms' 
+        << totalTime
+        << "ms" 
         << std::endl;
 
     out.close();
@@ -249,7 +236,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	t2 = clock();
-    float totalTime = ((float)t2-(float)t1)/1000.0;
+    float totalTime = ((float)t2-(float)t1)/CLOCKS_PER_SEC*1000;
 
     #if defined FOOBUG 
 	std::cout << "Simulation time: " << totalTime << "ms" << std::endl; //Output time taken
