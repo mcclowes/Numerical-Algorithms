@@ -13,14 +13,7 @@ prep:
 
 run:		
 	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, maxPos, maxVel
-	#./spacebodies 0.01 2000000 0.001 100 50 20 30 5
-	./spacebodies 0.05 2000000 0.001 100 10 2 6 2
-	./spacebodies 0.05 2000000 0.001 100 20 2 6 2
-	./spacebodies 0.05 2000000 0.001 100 30 2 6 2
-	#./spacebodies 0.05 2000000 0.001 100 40 2 6 2
-	#./spacebodies 0.05 2000000 0.001 100 50 2 6 2
-	#./spacebodies 0.05 2000000 0.001 100 75 2 6 2
-	#./spacebodies 0.05 2000000 0.001 100 100 2 6 2
+	./spacebodies 0.01 2000000 0.001 100 30 20 30 5
 
 run_default:		
 	./spacebodies
@@ -32,7 +25,7 @@ all:
 
 serial:		
 	make prep
-	g++-4.9 -O3 -DHAMTIME -Wall spacebodies.cpp -std=c++11 -o spacebodies
+	g++-4.9 -O3 -Wall spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 time_serial:		
