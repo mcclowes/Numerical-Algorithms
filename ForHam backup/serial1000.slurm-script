@@ -6,4 +6,4 @@
 #SBATCH -t 02:00:00
 #SBATCH --exclusive
 
-./spacebodiesparallel 0.1 1000000 0.001 100 1000 13 2 5
+./spacebodiesserial 0.05 2000000 0.001 100 1000 2 6 2

@@ -10,17 +10,17 @@
 #include <math.h>
 #include <stdlib.h>
 
-// Space Body initialisation values
-int bodyCount = 30;         // Seed K Space Body instances
-int maxMass = 20;           // Seed bodies with mass 0 to K
-int maxPos = 30;            // Seed bodies with position vectors of value 0 to K
-int maxVel = 5;             // Seed bodies with velocity vectors of value 0 to K
-
-// Simulation variables
+// Default simulation variables
 double collDist = 0.01;     // Collision distance
-int timeSteps = 2000000;    // No. steps
+int timeSteps = 1000000;    // No. steps
 double timeStep = 0.001;    // Step size
 int plotStep = 100;         // Plot every K steps
+
+// Default Space Body initialisation values
+int bodyCount = 50;         // Seed K Space Body instances
+int maxMass = 13;           // Seed bodies with mass 0 to K
+int maxPos = 40;            // Seed bodies with position vectors of value 0 to K
+int maxVel = 5;             // Seed bodies with velocity vectors of value 0 to K
 
 // -------------------- 3D vector struct and vector handling methods --------------------------- //
 
@@ -140,7 +140,7 @@ void printResultsFile(float totalTime) {
 
     out << "Total time: "
         << totalTime
-        << "ms" 
+        << "s" 
         << std::endl;
 
     out.close();
@@ -151,9 +151,7 @@ void updateBodies() {
     collisionPairs.clear();
 
     // Update forces
-    #if defined PAR
     #pragma omp parallel for
-    #endif
     for ( int i = 0; i < bodyCount; i++ ) {
         spaceBodies[i].force = (Vec3){};
 
@@ -162,6 +160,7 @@ void updateBodies() {
             if ( (i != j) && (spaceBodies[j].collided == NULL) ) {
                 double distance = magVec( subVec( spaceBodies[i].pos, spaceBodies[j].pos ) );
                 
+                // Calculate forces
                 spaceBodies[i].force = addVec(
                     spaceBodies[i].force, multVec(
                         subVec( spaceBodies[j].pos, spaceBodies[i].pos ),
@@ -169,6 +168,7 @@ void updateBodies() {
                     )
                 );
 
+                // Calculate collisions
                 if ( (j > i) && (i < bodyCount) && (distance < collDist) && (spaceBodies[j].collided == NULL) ) {
                     #if defined FOOBUG
                     printf( "Collision: %d , %d\n", i, j );
@@ -186,9 +186,7 @@ void updateBodies() {
     }
 
     // Calculate position and velocity
-    #if defined PAR
     #pragma omp parallel for
-    #endif
     for (int i = 0; i < bodyCount; i++) {
         if ( spaceBodies[i].collided != NULL ) {
             // In the event the particle is part of a collided pair
@@ -210,11 +208,13 @@ int main(int argc, char* argv[]) {
         if (argc >= 4){ plotStep = atoi(argv[4]);}  // Plot every K steps
         if (argc >= 5){ bodyCount = atoi(argv[5]);} // Seed K Space Body instances
         if (argc >= 6){ maxMass = atoi(argv[6]);}   // Seed bodies with mass 0 to K
-        if (argc >= 7){ maxPos = atoi(argv[7]);}   // Seed bodies with position vectors of value 0 to K
+        #if defined FOOBUG 
+        printf("%f\n", atoi(argv[5]) / cbrt( atof(argv[7]) ) ) ;
+        #endif
+        if (argc >= 7){ maxPos = int(atoi(argv[5]) / cbrt( atof(argv[7]) ) );}   // Seed bodies with position vectors of value 0 to K based on density
         if (argc >= 8){ maxVel = atoi(argv[8]);}    // Seed bodies with velocity vectors of value 0 to K
     }
 
-    //#pragma omp parallel for //Worth parallelising?
     for (int i = 0; i < bodyCount; i++) { //Seed K many space bodies
         spaceBodies.push_back( 
             createSpaceBody(   (double)(rand() % maxMass ), //Body mass
@@ -235,11 +235,19 @@ int main(int argc, char* argv[]) {
 	printCSVFile(0); // Please switch off all IO if you do performance tests.
     #endif
 
-    #if defined HAMTIME || SIMTIME
-	clock_t t1, t2;
-	t1 = clock();
+    //Start timing
+    #if defined FOOBUG || HAMTIME || SIMTIME
+    #if defined PAR
+	time_t t1, t2; // Parallel timing scheme
+	t1 = time(NULL);
+    #endif
+    #if !defined PAR
+    clock_t t1, t2; // Non-parallelised
+    t1 = clock();
+    #endif
     #endif
 
+    //#pragma omp parallel for
 	for (int i=0; i < timeSteps; i++) {
 		updateBodies();
 
@@ -250,16 +258,23 @@ int main(int argc, char* argv[]) {
         }
 	}
 
-    #if defined HAMTIME || SIMTIME
-	t2 = clock();
-    float totalTime = ((float)t2-(float)t1)/CLOCKS_PER_SEC*1000;
+    // End timing
+    #if defined FOOBUG || HAMTIME || SIMTIME
+    #if defined PAR
+    t2 = time(NULL);
+    double totalTime = difftime(t2, t1);
+    #endif
+    #if !defined PAR
+    t2 = clock();
+    float totalTime = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
+    #endif
     #endif
 
     #if defined FOOBUG 
-	std::cout << "Simulation time: " << totalTime << "ms" << std::endl; //Output time taken
+	std::cout << "Simulation time: " << totalTime << "s" << std::endl; //Output time taken
     #endif
 
-    #if defined /*HAMTIME ||*/ SIMTIME
+    #if defined SIMTIME
     printResultsFile(totalTime);
     #endif
 

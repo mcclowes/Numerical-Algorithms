@@ -2,18 +2,20 @@ CC=g++-4.9
 
 clean:		
 	rm -f spacebodies
+	rm -f spacebodiesS
+	rm -f spacebodiesP
 	rm -f *.o
 	rm -rf output/
-	#rm -rf results/
+	rm -rf results/
 
 prep: 		
 	make clean
 	mkdir output
-	mkdir -p results
+	mkdir results
 
 run:		
-	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, maxPos, maxVel
-	#./spacebodies 0.01 2000000 0.001 100 10 20 30 5
+	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, density, maxVel
+	./spacebodies 0.1 1000000 0.001 100 200 13 2 5
 
 run_default:		
 	./spacebodies
@@ -35,7 +37,7 @@ time_serial:
 
 debug_serial:		
 	make prep
-	g++-4.9 -g -DFOOBUG -Wall spacebodies.cpp -std=c++11 -o spacebodies
+	g++-4.9 -O3 -DFOOBUG -Wall spacebodies.cpp -std=c++11 -o spacebodies
 	make run
 
 parallel:	
@@ -57,19 +59,21 @@ test:
 	make prep
 	g++-4.9 -O3 -DSIMTIME -Wall spacebodies.cpp -std=c++11 -o spacebodiesS
 	g++-4.9 -O3 -DSIMTIME -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodiesP
-	./spacebodiesS 0.05 2000000 0.001 50 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 100 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 150 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 200 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 250 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 500 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 625 100 2 6 2
-	./spacebodiesS 0.05 2000000 0.001 750 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 50 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 100 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 150 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 200 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 250 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 500 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 625 100 2 6 2
-	./spacebodiesP 0.05 2000000 0.001 750 100 2 6 2
+	./spacebodiesS 0.1 1000000 0.001 100 25 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 50 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 100 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 150 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 200 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 250 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 500 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 625 13 2 5
+	./spacebodiesS 0.1 1000000 0.001 100 750 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 25 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 50 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 100 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 150 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 200 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 250 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 500 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 625 13 2 5
+	./spacebodiesP 0.1 1000000 0.001 100 750 13 2 5
