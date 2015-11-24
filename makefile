@@ -14,11 +14,6 @@ prep:
 run:		
 	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, maxPos, maxVel
 	#./spacebodies 0.01 2000000 0.001 100 10 20 30 5
-	./spacebodies 0.05 2000000 0.001 200 100 2 6 2
-	./spacebodies 0.05 2000000 0.001 250 100 2 6 2
-	./spacebodies 0.05 2000000 0.001 500 100 2 6 2
-	./spacebodies 0.05 2000000 0.001 625 100 2 6 2
-	./spacebodies 0.05 2000000 0.001 750 100 2 6 2
 
 run_default:		
 	./spacebodies
@@ -57,3 +52,24 @@ debug_parallel:
 	make prep
 	g++-4.9 -g -DFOOBUG -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodies
 	make run
+
+test:
+	make prep
+	g++-4.9 -O3 -DSIMTIME -Wall spacebodies.cpp -std=c++11 -o spacebodiesS
+	g++-4.9 -O3 -DSIMTIME -Wall -fopenmp -DPAR spacebodies.cpp -std=c++11 -o spacebodiesP
+	./spacebodiesS 0.05 2000000 0.001 50 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 100 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 150 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 200 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 250 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 500 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 625 100 2 6 2
+	./spacebodiesS 0.05 2000000 0.001 750 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 50 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 100 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 150 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 200 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 250 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 500 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 625 100 2 6 2
+	./spacebodiesP 0.05 2000000 0.001 750 100 2 6 2
