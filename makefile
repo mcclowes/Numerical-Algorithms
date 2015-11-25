@@ -15,7 +15,8 @@ prep:
 
 run:		
 	# collDist, timeSteps, timeStep, plotStep, bodyCount, maxMass, density, maxVel
-	./spacebodies 0.1 1000000 0.001 100 150 50 2 5
+	./spacebodies 0.1 1000000 0.001 100 50 13 2 25
+	#./spacebodies 0.1 1000000 0.001 100 50 13 2 5
 
 run_default:		
 	./spacebodies

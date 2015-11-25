@@ -15,6 +15,3 @@
 - Press the play button and adopt colours and point sizes.
 - For some Paraview versions, you have to mark your TableToPoints item (usually called TableToPoints1) and explicitly select that X Column is x, Y Column is y, and Z Column is z.
 - What is pretty cool is the Filter TemporalParticlesToPathlines. If you set Mask Points to 1, you see a part of the trajactory.
-
-## To do
-- Seperate concerns
