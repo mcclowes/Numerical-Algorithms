@@ -1,4 +1,4 @@
-# Numberical Algorithms - Space Bodies
+# Space Bodies
 
 ## Building the code
 // To build and run this file:
